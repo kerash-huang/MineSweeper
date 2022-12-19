@@ -83,7 +83,7 @@
   cursor: pointer;
 }
 
-#btnReset button:active {
+#btnReset button:active, #btnReset button.touched {
   border-style: inset;
   border-right-color: white;
   border-bottom-color: white;
@@ -117,10 +117,15 @@
   display: block;
 }
 #DigMap .grid {
-  display: inline-block;
   float: left;
   width: 14px;
   height: 14px;
+}
+
+#DigMap .grid.cover:active,#DigMap .grid.cover.touched {
+  border-width:  2px;
+  border-color: transparent;
+  border-style: inset;
 }
 
 #DigMap .grid.flagged {
@@ -141,7 +146,7 @@
   margin-top: 0px;
 }
 
-#DigMap .grid.cover.bomb {
+#DigMap .grid.uncover.bomb {
   background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAxCAYAAACYq/ofAAAAAXNSR0IArs4c6QAAARZJREFUaEPtWVsSgyAQg1v1/l+9FZ3pqNNiMQl1oY/4a2Q3D9ZXTj9y5GAe12r9S1S9aCKlajysXtjCCwETUSNoR0jFHC1SqA32d9E6ikh9ThVzxT+KKkeSdcREBHuGOFL3c1acWjzZpLy92U2EjJodQUI1o1RKO2U5y8J27xm2kokgq8nzUHAIaLxXbPUdLdKKBQYFhwA7klKaNbWi79ZamHj0PVVHD2r8UnORJjJX/331nSNHDc7eP3C6QgAav4PsgX1CgImcaxUUHALsiB15qQBMDgQ0hI0ex3Jf8gWD9ozcl3zBtxPxJ1NheA35ZGpHPs0RoZ8nqPyfo7dQ79Ri65kIq9SKsyOkYo4WKdQGc7RUxaLxNwflUjKTww3BAAAAAElFTkSuQmCC");
   background-repeat: no-repeat;
   background-size: cover;
@@ -165,4 +170,7 @@
   width: 15px;
   height: 15px;
   margin-top: -1px;
+  text-align: center;
+  font-weight: bold;
+  line-height: 15px;
 }

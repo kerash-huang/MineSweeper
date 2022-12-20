@@ -2,10 +2,11 @@
 
 const MineSweeper = function () {
     var STATUS_START = false;
-    var MAP_WIDTH, MAP_HEIGHT, BOMB_COUNT, TIME_SEC;
+    var STATUS_GAME_OVER = false;
+    var MAP_WIDTH, MAP_HEIGHT, MAP_BOMB_COUNT, BOMB_COUNT, TIME_SEC;
     var TIMER = null;
     var MINE_MAP = [];
-    var eleMAP, eleBOMBCOUNT, eleTIMER;
+    var eleMAP, eleBOMBCOUNT, eleTIMER, eleSMILEBTN;
     var colorSet = {
         1: "6D3F5B",
         2: "78858B",
@@ -26,6 +27,7 @@ const MineSweeper = function () {
             this.neighborMineCount = 0;
             this.isFlagged = false;
             this.isReveal = false;
+            this.clickBomb = false;
         }
         setFlag() {
             this.isFlagged = true;
@@ -36,17 +38,12 @@ const MineSweeper = function () {
         setNeighborMineCount(count) {
             this.neighborMineCount = count;
         }
+        setClickBomb() {
+            this.clickBomb = true;
+        }
     }
 
-    function setBombCountText(count, gridCount) {
-        if (count >= gridCount) {
-            throw "bomb count over limit.";
-        }
-
-        if (count > 999 || count < 1) {
-            return false;
-        }
-
+    function setBombCountText(count) {
         if (count.toString().length < 3) {
             count = "0".repeat(3 - count.toString().length).concat(count);
         }
@@ -66,13 +63,13 @@ const MineSweeper = function () {
         });
     }
 
-    function init(width, height, bombs, mapElement, bombCountElement, timerElement) {
-        MAP_WIDTH = width;
-        MAP_HEIGHT = height;
-        BOMB_COUNT = bombs;
-        eleMAP = mapElement;
-        eleBOMBCOUNT = bombCountElement;
-        eleTIMER = timerElement;
+    function CallANewGame() {
+        setTimeout(function () {
+            if (eleSMILEBTN.classList.contains('touched')) {
+                eleSMILEBTN.classList.remove('touched');
+                startGame();
+            }
+        }, 50);
     }
 
     function _initMapArray() {
@@ -141,34 +138,8 @@ const MineSweeper = function () {
         });
     }
 
-    function startGame() {
-        STATUS_START = false;
-        _clearMap();
-        setBombCountText(bombs, MAP_WIDTH * MAP_HEIGHT);
-        setTimerText(0);
-        _initMapArray();
-        _displayMap();
-        // _startTimer();
-    }
-
     function _clearMap() {
         eleMAP.innerHTML = '';
-    }
-
-    function mineData(ev) {
-        var area = this.dataset.gridPosition.split(',');
-        var gridData = MINE_MAP[area[1]][area[0]];
-        if(gridData.isFlagged || gridData.isReveal) {
-            return false;
-        }
-        if(gridData.neighborMineCount > 0) {
-            gridData.isReveal = true;
-            var gridElement = document.getElementsByClassName('grid').item(gridData.gridLocation-1);
-            gridElement.classList.remove('cover');
-            gridElement.classList.add('uncover');
-            gridElement.innerHTML = gridData.neighborMineCount;
-            gridElement.style.color = "#" + colorSet[gridData.neighborMineCount];
-        }
     }
 
     function _displayMap() {
@@ -177,19 +148,10 @@ const MineSweeper = function () {
                 var newGrid = document.createElement("span");
                 newGrid.dataset.gridPosition = indexX + "," + indexY;
                 newGrid.classList.add("grid")
-                // if (gridObject.hasMine) {
-                //     newGrid.classList.add('uncover');
-                //     newGrid.classList.add('bomb');
-                // } else if (gridObject.neighborMineCount > 0) {
-                //     newGrid.innerHTML = gridObject.neighborMineCount;
-                //     newGrid.classList.add('uncover');
-                //     newGrid.classList.remove('cover');
-                //     newGrid.style.color = "#" + colorSet[gridObject.neighborMineCount];
-                // } else {
-                //     newGrid.classList.add('cover');
-                // }
                 newGrid.classList.add('cover');
                 newGrid.addEventListener('click', mineData);
+                newGrid.addEventListener('mousedown', mineData);
+                newGrid.addEventListener('contextmenu', flagGrid);
                 eleMAP.append(newGrid);
             });
         });
@@ -198,7 +160,7 @@ const MineSweeper = function () {
     function _startTimer() {
         TIME_SEC = 0;
         TIMER = setInterval(function () {
-            _setTimerText(TIME_SEC++);
+            setTimerText(TIME_SEC++);
             if (TIME_SEC >= 999) {
                 _game_over();
             }
@@ -206,12 +168,217 @@ const MineSweeper = function () {
     }
 
     function _game_over() {
-        // show fail
+        STATUS_GAME_OVER = true;
+        STATUS_START = false;
+        function displayAllBomb() {
+            MINE_MAP.forEach((mapLine, indexY) => {
+                mapLine.forEach((item, indexX) => {
+                    var show_grid = eleMAP.children.item(indexY * MAP_WIDTH + indexX);
+                    show_grid.classList.add('finish')
+                    show_grid.style.disabled = true;
+                    if (!item.isReveal && item.hasMine) {
+                        show_grid.classList.remove('cover');
+                        show_grid.classList.add('uncover');
+                        if (item.clickBomb) {
+                            show_grid.classList.add('triggerBomb')
+                        } else {
+                            show_grid.classList.add('bomb');
+                        }
+                    }
+                });
+            })
+        }
+        displayAllBomb();
+        eleSMILEBTN.classList.add('bad')
         _stopTimer();
     }
 
     function _stopTimer() {
         clearInterval(TIMER);
+    }
+
+    function __uncoverd_gridElement(gridData) {
+        MINE_MAP[gridData.y][gridData.x].isReveal = true;
+        var gridElement = document.getElementsByClassName('grid').item(gridData.gridLocation - 1);
+        gridElement.classList.remove('cover');
+        gridElement.classList.add('uncover');
+        if (gridData.neighborMineCount) {
+            gridElement.innerHTML = gridData.neighborMineCount;
+            gridElement.style.color = "#" + colorSet[gridData.neighborMineCount];
+        } else {
+            gridElement.classList.add('empty');
+        }
+        return true;
+
+    }
+
+    function _uncoverGrid(gridData, spreadEmpty) {
+        if (spreadEmpty) {
+            if (gridData.isReveal || gridData.isFlagged) {
+                return true;
+            }
+            __uncoverd_gridElement(gridData);
+        } else {
+            if (gridData.neighborMineCount > 0) {
+                __uncoverd_gridElement(gridData);
+                return true;
+            } else if (gridData.hasMine) {
+                // 炸
+                gridData.setClickBomb();
+                _game_over();
+                return false;
+            } else if (gridData.neighborMineCount == 0) {
+                __uncoverd_gridElement(gridData);
+                open9Grid(gridData);
+            }
+        }
+        return true;
+    }
+
+    function _check_win() {
+        var checkOKCount = 0;
+        MINE_MAP.forEach((mapLine, indexY) => {
+            mapLine.forEach((item, indexX) => {
+                if (item.hasMine && (!item.isReveal || item.isFlagged)) {
+                    checkOKCount++;
+                }
+                if (item.isReveal) {
+                    checkOKCount++;
+                }
+            });
+        });
+        if (checkOKCount === MAP_WIDTH * MAP_HEIGHT) {
+            return true;
+        }
+        return false;
+    }
+
+    function _winner() {
+        STATUS_GAME_OVER = true;
+        STATUS_START = false;
+        eleSMILEBTN.classList.add('cool');
+        _stopTimer();
+    }
+
+    function startGame() {
+        _stopTimer();
+        BOMB_COUNT = MAP_BOMB_COUNT;
+        STATUS_START = false;
+        STATUS_GAME_OVER = false;
+        eleSMILEBTN.className = '';
+        eleSMILEBTN.classList.add('smile')
+        _clearMap();
+        setBombCountText(bombs, MAP_WIDTH * MAP_HEIGHT);
+        setTimerText(0);
+        _initMapArray();
+        _displayMap();
+    }
+
+    function mineData(ev) {
+        if (ev.buttons > 0) {
+            this.blur();
+            return false;
+        }
+        if (STATUS_GAME_OVER) {
+            return false;
+        }
+        var area = this.dataset.gridPosition.split(',');
+        var gridData = MINE_MAP[area[1]][area[0]];
+        if (gridData.isFlagged || gridData.isReveal) {
+            return false;
+        }
+        if (!STATUS_START) {
+            _startTimer();
+            STATUS_START = true;
+        }
+        var isUncover = _uncoverGrid(gridData, false);
+        if (isUncover) {
+            if (_check_win()) {
+                _winner();
+            }
+        }
+    }
+
+    function flagGrid(ev) {
+        ev.preventDefault();
+        if (STATUS_GAME_OVER) {
+            return false;
+        }
+        var area = this.dataset.gridPosition.split(',');
+        var gridData = MINE_MAP[area[1]][area[0]];
+        if (gridData.isReveal) {
+            return false;
+        }
+        var gridElement = document.getElementsByClassName('grid').item(gridData.gridLocation - 1);
+        if (gridData.isFlagged) {
+            gridData.isFlagged = false;
+            BOMB_COUNT++;
+            gridElement.classList.remove('flagged');
+        } else {
+            if (BOMB_COUNT <= 0) {
+                return false;
+            }
+            gridData.isFlagged = true;
+            gridElement.classList.add('flagged');
+            BOMB_COUNT--;
+        }
+        setBombCountText(BOMB_COUNT);
+        if (BOMB_COUNT === 0) {
+            if (_check_win()) {
+                _winner();
+            }
+        }
+    }
+
+    function open9Grid(gridData) {
+        for (var aY = -1; aY <= 1; aY++) {
+            for (var aX = -1; aX <= 1; aX++) {
+                if (gridData.y + aY < 0 || gridData.y + aY >= MAP_HEIGHT) {
+                    continue;
+                }
+                if (gridData.x + aX < 0 || gridData.x + aX >= MAP_WIDTH) {
+                    continue;
+                }
+                if (aX == 0 && aY == 0) {
+                    continue;
+                }
+                var targetX = gridData.x + aX;
+                var targetY = gridData.y + aY;
+                var sGrid = MINE_MAP[targetY][targetX];
+                if (sGrid.isFlagged || sGrid.isReveal) {
+                    continue;
+                }
+                __uncoverd_gridElement(sGrid);
+                if (sGrid.neighborMineCount == 0) {
+                    open9Grid(sGrid);
+                }
+            }
+        }
+    }
+
+    function init(width, height, bombs, mapElement, bombCountElement, timerElement, btnReset) {
+
+        if (bombs >= width * height) {
+            throw "bomb count over limit.";
+        }
+
+        if (bombs > 999 || bombs < 1) {
+            throw "bomb count not valid.";
+        }
+
+        MAP_WIDTH = width;
+        MAP_HEIGHT = height;
+        MAP_BOMB_COUNT = bombs;
+        eleMAP = mapElement;
+        eleBOMBCOUNT = bombCountElement;
+        eleTIMER = timerElement;
+        eleSMILEBTN = btnReset;
+        eleSMILEBTN.addEventListener('click', CallANewGame);
+        eleSMILEBTN.addEventListener('mouseup', CallANewGame);
+        eleSMILEBTN.addEventListener('mouseout', CallANewGame);
+        eleSMILEBTN.addEventListener('mousedown', function (e) {
+            eleSMILEBTN.classList.add("touched");
+        });
     }
 
     return {
@@ -229,30 +396,12 @@ var bombCounterElement = document.getElementById("bombCountSeg");
 //
 var width = 9;
 var height = 9;
-var bombs = 20;
-// GameWindow.style.width = (width * 18).toString() + "px";
+var bombs = 9;
 var ms = new MineSweeper();
-ms.init(
-    width,
-    height,
-    bombs,
-    digMapElement,
-    bombCounterElement, timeCounterElement,
-);
 var BtnReset = document.getElementById('btnReset').getElementsByTagName("button")[0];
-BtnReset.addEventListener('click', NewGame);
-BtnReset.addEventListener('mouseup', NewGame);
-BtnReset.addEventListener('mouseout', NewGame);
-BtnReset.addEventListener('mousedown', function (e) {
-    BtnReset.classList.add("touched");
-});
-function NewGame() {
-    setTimeout(function () {
-        if (BtnReset.classList.contains('touched')) {
-            ms.start();
-            BtnReset.classList.remove('touched');
-        }
-    }, 100);
-
-}
+ms.init(
+    width, height, bombs,
+    digMapElement, bombCounterElement, timeCounterElement,
+    BtnReset
+);
 ms.start();

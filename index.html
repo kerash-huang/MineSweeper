@@ -1,79 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
-
-    <head>
-        <meta charset="UTF-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Document</title>
-        <style>
-            #MindsweeperBox {
-                width: 300px;
-            }
-
-            #msGrids {
-                width: 100%;
-                
-            }
-
-            #msGrids td.grid {
-                width: 30px;
-                height: 20px;
-                border-style: outset;
-                border-width: 3px;
-                border-top-color: #FFF;
-                border-left-color: #FFF;
-                border-right-color: #DDD;
-                border-bottom-color: #DDD;
-                background: #CCC;
-                text-align: center;
-                line-height: 20px;
-                cursor: default
-            }
-
-            #BoxHeader {
-                position: relative;
-                height: 30px;
-                border-style: inset;
-                border-width: 3px;
-                padding: 6px;
-                margin-bottom: 5px;
-                background-color: #CCC;
-            }
-
-            #mineCountBox {
-                position: absolute;
-                top: 0;
-                left: 3%;
-            }
-
-            #smileIconBtn {
-                width: 30px;
-                margin: 0 auto
-            }
-
-            #gameTimer {
-                position: absolute;
-                top: 0;
-                right: 3%;
-            }
-        </style>
-    </head>
-
-    <body>
-        <div id='MindsweeperBox'>
-            <div id='BoxHeader'>
-                <div id='mineCountBox'></div>
-                <div id='smileIconBtn'>:)</div>
-                <div id='gameTimer'>0 0 0</div>
-            </div>
-            <table id='msGrids'>
-            </table>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="view.css" />
+    <title>MineSweep Template Interface</title>
+  </head>
+  <body>
+    <div style="width: 80%; margin: 0 auto;">
+      <div id="GameWindow">
+        <div id="ControlPanel">
+          <table>
+            <tr>
+              <td id="bombCountSeg" class="seven-segment-panel">
+                <span class="segment-digit">0</span
+                ><span class="segment-digit">0</span
+                ><span class="segment-digit">0</span>
+              </td>
+              <td>
+                <div class="panel-center-control">
+                  <span id="btnReset">
+                    <button type="button" class="smile"></button>
+                  </span>
+                </div>
+              </td>
+              <td id="gameTimerSeg" class="seven-segment-panel">
+                <span class="segment-digit">0</span
+                ><span class="segment-digit">0</span
+                ><span class="segment-digit">0</span>
+              </td>
+            </tr>
+          </table>
         </div>
-        </div>
-        <!-- <script src="mineSweeper.js"></script>
-    <script>new MineSweeper()</script> -->
-        <script src="easyMS.js"></script>
-    </body>
-
+        <div id="DigMap"></div>
+      </div>
+      ctrl + R 重置
+    </div>
+    <script src="core.js"></script>
+  </body>
 </html>

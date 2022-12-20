@@ -4,6 +4,8 @@
 }
 
 #GameWindow {
+  margin: 0 auto;
+  margin-top: 20px;
   user-select: none;
   width: 168px;
   padding: 7px;
@@ -164,6 +166,10 @@
   background-size: 85% 85%;
   background-position: center;
   border-bottom-color: transparent;
+}
+
+#DigMap .grid.uncover.bomb.wrong {
+  background-image:url('wrongBomb1.png');
 }
 
 #DigMap .grid.uncover.triggerBomb {

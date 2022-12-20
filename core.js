@@ -176,7 +176,7 @@ const MineSweeper = function () {
                     var show_grid = eleMAP.children.item(indexY * MAP_WIDTH + indexX);
                     show_grid.classList.add('finish')
                     show_grid.style.disabled = true;
-                    if (!item.isReveal && item.hasMine) {
+                    if (!item.isReveal && !item.isFlagged && item.hasMine) {
                         show_grid.classList.remove('cover');
                         show_grid.classList.add('uncover');
                         if (item.clickBomb) {
@@ -184,6 +184,12 @@ const MineSweeper = function () {
                         } else {
                             show_grid.classList.add('bomb');
                         }
+                    } else if (item.isFlagged && !item.hasMine) {
+                        show_grid.classList.remove('cover');
+                        show_grid.classList.remove('flagged');
+                        show_grid.classList.add('uncover');
+                        show_grid.classList.add('bomb');
+                        show_grid.classList.add('wrong');
                     }
                 });
             })
@@ -387,16 +393,21 @@ const MineSweeper = function () {
         mine: mineData,
     };
 };
-
+window.document.onkeydown = function(e) {
+    if(e.keyCode === 82 && e.ctrlKey === true) {
+        ms.start();
+    }
+}
 //
 var GameWindow = document.getElementById("GameWindow");
 var digMapElement = document.getElementById("DigMap");
 var timeCounterElement = document.getElementById("gameTimerSeg");
 var bombCounterElement = document.getElementById("bombCountSeg");
 //
-var width = 9;
-var height = 9;
-var bombs = 9;
+var width = 25;
+var height = 12;
+var bombs = 50;
+GameWindow.style.width = (width * 18 + 6) + "px";
 var ms = new MineSweeper();
 var BtnReset = document.getElementById('btnReset').getElementsByTagName("button")[0];
 ms.init(

@@ -290,16 +290,18 @@ const MineSweeper = function () {
     }
 
     function mineData(ev) {
+        var area = this.dataset.gridPosition.split(',');
+        var gridData = MINE_MAP[area[1]][area[0]];
         if (ev.buttons > 0 || ev.buttons != 0) {
             // tip down
-            // console.log('not click , go tip down?')
+            if (gridData.neighborMineCount > 0 && gridData.isReveal) {
+                //
+            }
             return false;
         }
         if (STATUS_GAME_OVER) {
             return false;
         }
-        var area = this.dataset.gridPosition.split(',');
-        var gridData = MINE_MAP[area[1]][area[0]];
         if (gridData.isFlagged || gridData.isReveal) {
             return false;
         }

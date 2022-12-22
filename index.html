@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
   <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -7,16 +8,24 @@
     <link rel="stylesheet" href="view.css" />
     <title>MineSweep Template Interface</title>
   </head>
+
   <body>
     <div style="width: 80%; margin: 0 auto;">
       <div id="GameWindow">
+        <div id="ControlSelectBar">
+          R = 重置 || 中鍵/右鍵 = 提示
+          <select id="">
+            <option value="9,9,9">初級</option>
+            <option value="">中級</option>
+            <option value="25,12,50">高級</option>
+          </select>
+        </div>
         <div id="ControlPanel">
           <table>
             <tr>
               <td id="bombCountSeg" class="seven-segment-panel">
-                <span class="segment-digit">0</span
-                ><span class="segment-digit">0</span
-                ><span class="segment-digit">0</span>
+                <span class="segment-digit">0</span><span class="segment-digit">0</span><span
+                  class="segment-digit">0</span>
               </td>
               <td>
                 <div class="panel-center-control">
@@ -26,17 +35,16 @@
                 </div>
               </td>
               <td id="gameTimerSeg" class="seven-segment-panel">
-                <span class="segment-digit">0</span
-                ><span class="segment-digit">0</span
-                ><span class="segment-digit">0</span>
+                <span class="segment-digit">0</span><span class="segment-digit">0</span><span
+                  class="segment-digit">0</span>
               </td>
             </tr>
           </table>
         </div>
         <div id="DigMap"></div>
       </div>
-      ctrl + R 重置
     </div>
-    <script src="core.js"></script>
+    <script src="core.js?v=3"></script>
   </body>
+
 </html>

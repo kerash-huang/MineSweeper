@@ -17,6 +17,12 @@
   border-left-color: white;
 }
 
+#ControlSelectBar {
+  background: white;
+  border-width: 2px;
+  border-style: outset;
+}
+
 #ControlPanel {
   background-color: #c0c0c0;
   padding: 2px 3px;

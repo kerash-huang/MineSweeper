@@ -151,6 +151,7 @@ const MineSweeper = function () {
                 newGrid.classList.add('cover');
                 newGrid.addEventListener('click', mineData);
                 newGrid.addEventListener('mousedown', mineData);
+                newGrid.addEventListener('mouseup', checkTip);
                 newGrid.addEventListener('contextmenu', flagGrid);
                 eleMAP.append(newGrid);
             });
@@ -218,12 +219,19 @@ const MineSweeper = function () {
 
     }
 
-    function _uncoverGrid(gridData, spreadEmpty) {
+    function _uncoverGrid(gridData, spreadEmpty, isTipOpen) {
         if (spreadEmpty) {
             if (gridData.isReveal || gridData.isFlagged) {
                 return true;
             }
             __uncoverd_gridElement(gridData);
+        } else if (isTipOpen) {
+            if (!gridData.isReveal && gridData.hasMine) {
+                _game_over();
+                return false;
+            } else {
+                __uncoverd_gridElement(gridData);
+            }
         } else {
             if (gridData.neighborMineCount > 0) {
                 __uncoverd_gridElement(gridData);
@@ -281,7 +289,7 @@ const MineSweeper = function () {
     }
 
     function mineData(ev) {
-        if (ev.buttons > 0) {
+        if (ev.buttons > 0 || ev.buttons != 0) {
             this.blur();
             return false;
         }
@@ -297,7 +305,7 @@ const MineSweeper = function () {
             _startTimer();
             STATUS_START = true;
         }
-        var isUncover = _uncoverGrid(gridData, false);
+        var isUncover = _uncoverGrid(gridData, false, false);
         if (isUncover) {
             if (_check_win()) {
                 _winner();
@@ -305,8 +313,82 @@ const MineSweeper = function () {
         }
     }
 
+    function checkTip(ev) {
+        if (ev.button != 1 && ev.button != 2) {
+            return false;
+        }
+        if (STATUS_GAME_OVER) {
+            return false;
+        }
+        var area = this.dataset.gridPosition.split(',');
+        var gridData = MINE_MAP[area[1]][area[0]];
+        if (gridData.isFlagged || !gridData.isReveal) {
+            return false;
+        }
+        // 檢查炸彈數
+        if (gridData.neighborMineCount <= 0) {
+            return false;
+        }
+        // 檢查四周 flag
+        var manualFlagCount = 0;
+        for (var aY = -1; aY <= 1; aY++) {
+            for (var aX = -1; aX <= 1; aX++) {
+                if (gridData.y + aY < 0 || gridData.y + aY >= MAP_HEIGHT) {
+                    continue;
+                }
+                if (gridData.x + aX < 0 || gridData.x + aX >= MAP_WIDTH) {
+                    continue;
+                }
+                if (aX == 0 && aY == 0) {
+                    continue;
+                }
+                var targetX = gridData.x + aX;
+                var targetY = gridData.y + aY;
+                var sGrid = MINE_MAP[targetY][targetX];
+                if (sGrid.isFlagged) {
+                    manualFlagCount++;
+                }
+            }
+        }
+        if (manualFlagCount === gridData.neighborMineCount) {
+            open9Tip(gridData);
+        } else {
+            return false;
+        }
+    }
+
+    function open9Tip(gridData) {
+        for (var aY = -1; aY <= 1; aY++) {
+            for (var aX = -1; aX <= 1; aX++) {
+                if (gridData.y + aY < 0 || gridData.y + aY >= MAP_HEIGHT) {
+                    continue;
+                }
+                if (gridData.x + aX < 0 || gridData.x + aX >= MAP_WIDTH) {
+                    continue;
+                }
+                if (aX == 0 && aY == 0) {
+                    continue;
+                }
+                var targetX = gridData.x + aX;
+                var targetY = gridData.y + aY;
+                var sGrid = MINE_MAP[targetY][targetX];
+                if (sGrid.isReveal || sGrid.isFlagged) {
+                    continue;
+                }
+                _uncoverGrid(sGrid, false, true);
+                if (sGrid.neighborMineCount == 0 && !sGrid.hasMine) {
+                    open9Tip(sGrid);
+                }
+            }
+        }
+    }
+
     function flagGrid(ev) {
         ev.preventDefault();
+
+        if (ev.buttons > 0) {
+            return false;
+        }
         if (STATUS_GAME_OVER) {
             return false;
         }
@@ -354,6 +436,7 @@ const MineSweeper = function () {
                 if (sGrid.isFlagged || sGrid.isReveal) {
                     continue;
                 }
+
                 __uncoverd_gridElement(sGrid);
                 if (sGrid.neighborMineCount == 0) {
                     open9Grid(sGrid);
@@ -393,8 +476,8 @@ const MineSweeper = function () {
         mine: mineData,
     };
 };
-window.document.onkeydown = function(e) {
-    if(e.keyCode === 82 && e.ctrlKey === true) {
+window.document.onkeydown = function (e) {
+    if (e.keyCode === 82) {
         ms.start();
     }
 }

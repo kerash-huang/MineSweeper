@@ -6,7 +6,7 @@ const MineSweeper = function () {
     var MAP_WIDTH, MAP_HEIGHT, MAP_BOMB_COUNT, BOMB_COUNT, TIME_SEC;
     var TIMER = null;
     var MINE_MAP = [];
-    var eleMAP, eleBOMBCOUNT, eleTIMER, eleSMILEBTN;
+    var eleWindow, eleMAP, eleBOMBCOUNT, eleTIMER, eleSMILEBTN;
     var colorSet = {
         1: "6D3F5B",
         2: "78858B",
@@ -272,6 +272,7 @@ const MineSweeper = function () {
         STATUS_START = false;
         eleSMILEBTN.classList.add('cool');
         _stopTimer();
+        alert('Congratulation!');
     }
 
     function startGame() {
@@ -290,7 +291,8 @@ const MineSweeper = function () {
 
     function mineData(ev) {
         if (ev.buttons > 0 || ev.buttons != 0) {
-            this.blur();
+            // tip down
+            // console.log('not click , go tip down?')
             return false;
         }
         if (STATUS_GAME_OVER) {
@@ -357,38 +359,9 @@ const MineSweeper = function () {
         }
     }
 
-    function open9Tip(gridData) {
-        for (var aY = -1; aY <= 1; aY++) {
-            for (var aX = -1; aX <= 1; aX++) {
-                if (gridData.y + aY < 0 || gridData.y + aY >= MAP_HEIGHT) {
-                    continue;
-                }
-                if (gridData.x + aX < 0 || gridData.x + aX >= MAP_WIDTH) {
-                    continue;
-                }
-                if (aX == 0 && aY == 0) {
-                    continue;
-                }
-                var targetX = gridData.x + aX;
-                var targetY = gridData.y + aY;
-                var sGrid = MINE_MAP[targetY][targetX];
-                if (sGrid.isReveal || sGrid.isFlagged) {
-                    continue;
-                }
-                _uncoverGrid(sGrid, false, true);
-                if (sGrid.neighborMineCount == 0 && !sGrid.hasMine) {
-                    open9Tip(sGrid);
-                }
-            }
-        }
-    }
 
     function flagGrid(ev) {
         ev.preventDefault();
-
-        if (ev.buttons > 0) {
-            return false;
-        }
         if (STATUS_GAME_OVER) {
             return false;
         }
@@ -414,6 +387,31 @@ const MineSweeper = function () {
         if (BOMB_COUNT === 0) {
             if (_check_win()) {
                 _winner();
+            }
+        }
+    }
+    function open9Tip(gridData) {
+        for (var aY = -1; aY <= 1; aY++) {
+            for (var aX = -1; aX <= 1; aX++) {
+                if (gridData.y + aY < 0 || gridData.y + aY >= MAP_HEIGHT) {
+                    continue;
+                }
+                if (gridData.x + aX < 0 || gridData.x + aX >= MAP_WIDTH) {
+                    continue;
+                }
+                if (aX == 0 && aY == 0) {
+                    continue;
+                }
+                var targetX = gridData.x + aX;
+                var targetY = gridData.y + aY;
+                var sGrid = MINE_MAP[targetY][targetX];
+                if (sGrid.isReveal || sGrid.isFlagged) {
+                    continue;
+                }
+                _uncoverGrid(sGrid, false, true);
+                if (sGrid.neighborMineCount == 0 && !sGrid.hasMine) {
+                    open9Tip(sGrid);
+                }
             }
         }
     }
@@ -445,7 +443,7 @@ const MineSweeper = function () {
         }
     }
 
-    function init(width, height, bombs, mapElement, bombCountElement, timerElement, btnReset) {
+    function init(width, height, bombs, mapWindow, mapElement, bombCountElement, timerElement, btnReset) {
 
         if (bombs >= width * height) {
             throw "bomb count over limit.";
@@ -458,6 +456,7 @@ const MineSweeper = function () {
         MAP_WIDTH = width;
         MAP_HEIGHT = height;
         MAP_BOMB_COUNT = bombs;
+        eleWindow = mapWindow;
         eleMAP = mapElement;
         eleBOMBCOUNT = bombCountElement;
         eleTIMER = timerElement;
@@ -470,9 +469,18 @@ const MineSweeper = function () {
         });
     }
 
+    function restartGame(w, h, c) {
+        MAP_WIDTH = w;
+        MAP_HEIGHT = h;
+        MAP_BOMB_COUNT = c;
+        eleWindow.style.width = (w * 18 + 6) + "px";
+        startGame();
+    }
+
     return {
         init: init,
         start: startGame,
+        restart: restartGame,
         mine: mineData,
     };
 };
@@ -482,19 +490,28 @@ window.document.onkeydown = function (e) {
     }
 }
 //
-var GameWindow = document.getElementById("GameWindow");
+var LevelOption = document.getElementById('changeLevel');
+var GameWindow = document.getElementById("Wrapper");
 var digMapElement = document.getElementById("DigMap");
 var timeCounterElement = document.getElementById("gameTimerSeg");
 var bombCounterElement = document.getElementById("bombCountSeg");
 //
-var width = 25;
-var height = 12;
-var bombs = 50;
+LevelOption.addEventListener('change', function () {
+    var mapLevelData = this.options[this.options.selectedIndex].value;
+    if (mapLevelData === '') { return false; }
+    var newMapData = mapLevelData.split(',');
+    ms.restart(newMapData[0], newMapData[1], newMapData[2]);
+})
+var initialOptionData = LevelOption.options[LevelOption.options.selectedIndex].value;
+var initialDim = initialOptionData.split(',');
+var width = initialDim[0];
+var height = initialDim[1];
+var bombs = initialDim[2];
 GameWindow.style.width = (width * 18 + 6) + "px";
 var ms = new MineSweeper();
 var BtnReset = document.getElementById('btnReset').getElementsByTagName("button")[0];
 ms.init(
-    width, height, bombs,
+    width, height, bombs, GameWindow,
     digMapElement, bombCounterElement, timeCounterElement,
     BtnReset
 );

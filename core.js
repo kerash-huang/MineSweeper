@@ -153,6 +153,7 @@ const MineSweeper = function () {
                 newGrid.addEventListener('click', mineData);
                 newGrid.addEventListener('mousedown', mineData);
                 newGrid.addEventListener('mouseup', checkTip);
+                newGrid.addEventListener('mouseout', _makeUnTip);
                 newGrid.addEventListener('contextmenu', flagGrid);
                 eleMAP.append(newGrid);
             });
@@ -207,7 +208,7 @@ const MineSweeper = function () {
 
     function __uncoverd_gridElement(gridData) {
         MINE_MAP[gridData.y][gridData.x].isReveal = true;
-        var gridElement = document.getElementsByClassName('grid').item(gridData.gridLocation - 1);
+        var gridElement = eleMAP.getElementsByClassName('grid').item(gridData.gridLocation - 1);
         gridElement.classList.remove('cover');
         gridElement.classList.add('uncover');
         if (gridData.neighborMineCount) {
@@ -282,6 +283,55 @@ const MineSweeper = function () {
     function __set_winner_cb(callback) {
         cb_win = callback;
     }
+
+    function _makeisTip(tipGrid) {
+        for (var aY = -1; aY <= 1; aY++) {
+            for (var aX = -1; aX <= 1; aX++) {
+                if (tipGrid.y + aY < 0 || tipGrid.y + aY >= MAP_HEIGHT) {
+                    continue;
+                }
+                if (tipGrid.x + aX < 0 || tipGrid.x + aX >= MAP_WIDTH) {
+                    continue;
+                }
+                if (aX == 0 && aY == 0) {
+                    continue;
+                }
+                var targetX = tipGrid.x + aX;
+                var targetY = tipGrid.y + aY;
+                var sGrid = MINE_MAP[targetY][targetX];
+                if (sGrid.isFlagged || sGrid.isReveal) {
+                    continue;
+                }
+                var gridElement = eleMAP.getElementsByClassName('grid').item(sGrid.gridLocation - 1);
+                gridElement.classList.add('inTip');
+            }
+        }
+    }
+
+    function _makeUnTip(tipGrid) {
+        for (var aY = -1; aY <= 1; aY++) {
+            for (var aX = -1; aX <= 1; aX++) {
+                if (tipGrid.y + aY < 0 || tipGrid.y + aY >= MAP_HEIGHT) {
+                    continue;
+                }
+                if (tipGrid.x + aX < 0 || tipGrid.x + aX >= MAP_WIDTH) {
+                    continue;
+                }
+                if (aX == 0 && aY == 0) {
+                    continue;
+                }
+                var targetX = tipGrid.x + aX;
+                var targetY = tipGrid.y + aY;
+                var sGrid = MINE_MAP[targetY][targetX];
+                if (sGrid.isFlagged || sGrid.isReveal) {
+                    continue;
+                }
+                var gridElement = eleMAP.getElementsByClassName('grid').item(sGrid.gridLocation - 1);
+                gridElement.classList.remove('inTip');
+            }
+        }
+    }
+
     function startGame() {
         _stopTimer();
         BOMB_COUNT = MAP_BOMB_COUNT;
@@ -302,7 +352,7 @@ const MineSweeper = function () {
         if (ev.buttons > 0 || ev.buttons != 0) {
             // tip down
             if (gridData.neighborMineCount > 0 && gridData.isReveal) {
-                //
+                _makeisTip(gridData);
             }
             return false;
         }
@@ -333,6 +383,7 @@ const MineSweeper = function () {
         }
         var area = this.dataset.gridPosition.split(',');
         var gridData = MINE_MAP[area[1]][area[0]];
+        _makeUnTip(gridData);
         if (gridData.isFlagged || !gridData.isReveal) {
             return false;
         }
@@ -371,7 +422,6 @@ const MineSweeper = function () {
         }
     }
 
-
     function flagGrid(ev) {
         ev.preventDefault();
         if (STATUS_GAME_OVER) {
@@ -382,7 +432,7 @@ const MineSweeper = function () {
         if (gridData.isReveal) {
             return false;
         }
-        var gridElement = document.getElementsByClassName('grid').item(gridData.gridLocation - 1);
+        var gridElement = eleMAP.getElementsByClassName('grid').item(gridData.gridLocation - 1);
         if (gridData.isFlagged) {
             gridData.isFlagged = false;
             BOMB_COUNT++;
@@ -400,6 +450,7 @@ const MineSweeper = function () {
             _winner();
         }
     }
+
     function open9Tip(gridData) {
         for (var aY = -1; aY <= 1; aY++) {
             for (var aX = -1; aX <= 1; aX++) {

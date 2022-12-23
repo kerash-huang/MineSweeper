@@ -199,7 +199,7 @@
   border-radius: 2px;
 }
 
-#DigMap .grid.uncover {
+#DigMap .grid.uncover, #DigMap .grid.cover.inTip  {
   border-style: solid;
   border-width: 1px;
   padding: 1px;

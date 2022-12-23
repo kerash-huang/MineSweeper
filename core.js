@@ -153,7 +153,7 @@ const MineSweeper = function () {
                 newGrid.addEventListener('click', mineData);
                 newGrid.addEventListener('mousedown', mineData);
                 newGrid.addEventListener('mouseup', checkTip);
-                newGrid.addEventListener('mouseout', _makeUnTip);
+                newGrid.addEventListener('mouseout', uncheckTip);
                 newGrid.addEventListener('contextmenu', flagGrid);
                 eleMAP.append(newGrid);
             });
@@ -309,6 +309,9 @@ const MineSweeper = function () {
     }
 
     function _makeUnTip(tipGrid) {
+        if (tipGrid === null) {
+            return;
+        }
         for (var aY = -1; aY <= 1; aY++) {
             for (var aX = -1; aX <= 1; aX++) {
                 if (tipGrid.y + aY < 0 || tipGrid.y + aY >= MAP_HEIGHT) {
@@ -346,12 +349,14 @@ const MineSweeper = function () {
         _displayMap();
     }
 
+    var TIP_GRID_DATA = null
     function mineData(ev) {
         var area = this.dataset.gridPosition.split(',');
         var gridData = MINE_MAP[area[1]][area[0]];
-        if (ev.buttons > 0 || ev.buttons != 0) {
+        if (ev.buttons > 0 && ev.button != 0) {
             // tip down
             if (gridData.neighborMineCount > 0 && gridData.isReveal) {
+                TIP_GRID_DATA = gridData;
                 _makeisTip(gridData);
             }
             return false;
@@ -420,6 +425,11 @@ const MineSweeper = function () {
         } else {
             return false;
         }
+    }
+
+    function uncheckTip() {
+        _makeUnTip(TIP_GRID_DATA);
+        TIP_GRID_DATA = null;
     }
 
     function flagGrid(ev) {

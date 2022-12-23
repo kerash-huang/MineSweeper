@@ -1,18 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
+
   <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="view.css" />
+    <link rel="stylesheet" href="view.css?v=f1" />
     <title>MineSweep Template Interface</title>
   </head>
 
   <body>
-    <div style="width: 500; margin: 0 auto">
+    <div style="width: 500px; margin: 0 auto;">
       R = reset
       <div>
         <div id="GameWindow">
+          <div id="congradulationBox" class="dialogbox">
+            <div class="dialogbox-content">
+              Congradulation!<br>You successfully cleared the level
+              .<br><br>
+              <button type='button' id='dialogboxCloseBtn'>Close</button>
+            </div>
+          </div>
           <div id="ControlSelectBar">
             <select id="changeLevel">
               <option value="8,8,10">Easy</option>
@@ -26,9 +34,8 @@
                 <table>
                   <tr>
                     <td id="bombCountSeg" class="seven-segment-panel">
-                      <span class="segment-digit">0</span
-                      ><span class="segment-digit">0</span
-                      ><span class="segment-digit">0</span>
+                      <span class="segment-digit">0</span><span class="segment-digit">0</span><span
+                        class="segment-digit">0</span>
                     </td>
                     <td>
                       <div class="panel-center-control">
@@ -38,9 +45,8 @@
                       </div>
                     </td>
                     <td id="gameTimerSeg" class="seven-segment-panel">
-                      <span class="segment-digit">0</span
-                      ><span class="segment-digit">0</span
-                      ><span class="segment-digit">0</span>
+                      <span class="segment-digit">0</span><span class="segment-digit">0</span><span
+                        class="segment-digit">0</span>
                     </td>
                   </tr>
                 </table>
@@ -51,6 +57,7 @@
         </div>
       </div>
     </div>
-    <script src="core.js?v=3"></script>
+    <script src="core.js?v=f1"></script>
   </body>
+
 </html>

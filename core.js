@@ -4,9 +4,10 @@ const MineSweeper = function () {
     var STATUS_START = false;
     var STATUS_GAME_OVER = false;
     var MAP_WIDTH, MAP_HEIGHT, MAP_BOMB_COUNT, BOMB_COUNT, TIME_SEC;
-    var TIMER = null;
     var MINE_MAP = [];
+    var TIMER = null;
     var eleWindow, eleMAP, eleBOMBCOUNT, eleTIMER, eleSMILEBTN;
+    var cb_win = null;
     var colorSet = {
         1: "6D3F5B",
         2: "78858B",
@@ -216,7 +217,6 @@ const MineSweeper = function () {
             gridElement.classList.add('empty');
         }
         return true;
-
     }
 
     function _uncoverGrid(gridData, spreadEmpty, isTipOpen) {
@@ -272,9 +272,16 @@ const MineSweeper = function () {
         STATUS_START = false;
         eleSMILEBTN.classList.add('cool');
         _stopTimer();
-        alert('Congratulation!');
+        if (typeof cb_win === 'function') {
+            cb_win();
+        } else {
+            alert('Congratulation!');
+        }
     }
 
+    function __set_winner_cb(callback) {
+        cb_win = callback;
+    }
     function startGame() {
         _stopTimer();
         BOMB_COUNT = MAP_BOMB_COUNT;
@@ -356,6 +363,9 @@ const MineSweeper = function () {
         }
         if (manualFlagCount === gridData.neighborMineCount) {
             open9Tip(gridData);
+            if (_check_win()) {
+                _winner()
+            }
         } else {
             return false;
         }
@@ -386,10 +396,8 @@ const MineSweeper = function () {
             BOMB_COUNT--;
         }
         setBombCountText(BOMB_COUNT);
-        if (BOMB_COUNT === 0) {
-            if (_check_win()) {
-                _winner();
-            }
+        if (_check_win()) {
+            _winner();
         }
     }
     function open9Tip(gridData) {
@@ -484,6 +492,7 @@ const MineSweeper = function () {
         start: startGame,
         restart: restartGame,
         mine: mineData,
+        afterWin: __set_winner_cb
     };
 };
 window.document.onkeydown = function (e) {
@@ -517,4 +526,11 @@ ms.init(
     digMapElement, bombCounterElement, timeCounterElement,
     BtnReset
 );
+ms.afterWin(function () {
+    var box = document.getElementById("congradulationBox");
+    box.classList.add('showTip');
+    document.getElementById("dialogboxCloseBtn").addEventListener("click", function () {
+        box.classList.remove('showTip');
+    });
+})
 ms.start();
